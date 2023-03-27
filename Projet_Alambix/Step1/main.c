@@ -19,15 +19,21 @@ void alambix_init()
 void alambix_help()
 {
     char* help_path = alambix_help_html();
-    system(help_path);
-    free(help_path);
+    pid_t pid_fils = fork(); // Création d'un nouveau processus enfant
+
+    if (pid_fils == -1) { // Erreur lors de la création du processus enfant
+        perror("Erreur lors de la création du processus enfant.");
+        exit(EXIT_FAILURE);
+    } else if (pid_fils == 0) { // Code exécuté par le processus enfant
+        execlp("firefox", "firefox", help_path, NULL); // Lancement de Firefox avec le chemin de la documentation d'aide en argument
+        exit(EXIT_SUCCESS);
+    }
 }
 
 int main(int argc, char * argv[])
 {
     alambix_open();
     alambix_help(); // Launch the Alambix help documentation in a browser.
-
 
     // TODO: Insert cleanup code here.
 

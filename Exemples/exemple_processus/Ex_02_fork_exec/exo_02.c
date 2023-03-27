@@ -24,8 +24,6 @@ int main() {
         printf("Launching baobab using execv...\n");
         char *argv[] = {"baobab", NULL};
         execv("/usr/bin/baobab", argv);
-    } else {
-        wait(NULL);
     }
 
     // Launch baobab using execvp
