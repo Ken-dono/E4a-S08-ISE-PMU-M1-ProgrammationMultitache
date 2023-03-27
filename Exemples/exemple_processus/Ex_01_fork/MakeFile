@@ -1,0 +1,18 @@
+CC = gcc
+CFLAGS = -Wall -Wextra -Werror
+TARGET = exo_01
+OBJ = exo_01.o
+
+all: $(TARGET)
+
+$(TARGET): $(OBJ)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ)
+
+$(OBJ): exo_01.c
+	$(CC) $(CFLAGS) -c exo_01.c
+
+clean:
+	rm -f $(OBJ) $(TARGET)
+
+run: $(TARGET)
+	./$(TARGET)
