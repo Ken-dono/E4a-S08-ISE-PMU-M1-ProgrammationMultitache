@@ -10,6 +10,22 @@
 
 #include "alambix.h"
 #include <stdlib.h>
+#include <stdio.h>
+
+pthread_t alambix_client0_thread;
+pthread_t alambix_client1_thread;
+
+void * alambix_client_thread_fct(void * arg);
+
+void * alambix_client_thread_fct(void * arg)
+{
+    char * drink;
+
+    while ((drink = alambix_choose_drink()) != NULL)
+    {
+        alambix_order_drink(drink);
+    }
+}
 
 void alambix_init()
 {
@@ -30,11 +46,23 @@ void alambix_help()
     }
 }
 
+void alambix_start() {
+    //Thread alambix_client0_thread
+    if (pthread_create(&alambix_client0_thread, NULL, alambix_client_thread_fct, NULL) != 0) {
+        fprintf(stderr, "erreur pthread_create\n");
+        exit(EXIT_FAILURE);
+    }
+    //Thread alambix_client1_thread
+    if (pthread_create(&alambix_client1_thread, NULL, alambix_client_thread_fct, NULL) != 0) {
+        fprintf(stderr, "erreur pthread_create\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
 int main(int argc, char * argv[])
 {
     alambix_open();
     alambix_help(); // Launch the Alambix help documentation in a browser.
-
     // TODO: Insert cleanup code here.
 
     return alambix_close();
