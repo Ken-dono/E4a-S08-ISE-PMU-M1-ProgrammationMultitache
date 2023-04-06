@@ -5,6 +5,8 @@
 
 void * thread_1_fct(void * arg);
 void * thread_2_fct(void * arg);
+int erreur_1;
+int erreur_2;
 
 int main(void)
 {
@@ -23,13 +25,15 @@ int main(void)
 		fprintf(stderr, "erreur pthread_create\n");
 		exit(EXIT_FAILURE);
 	}
-	pthread_detach(thread_2);
+	//pthread_detach(thread_2);
 
 	fprintf(stdout, "Thread main attend Thread 1 (?)\n");
-	pthread_join(thread_1, NULL);
+	erreur_1 = pthread_join(thread_1, NULL);
+    printf("Erreur 1 : %d\n", erreur_1);
 
-	fprintf(stdout, "Thread main attend Thread 2 (?)\n");
-	pthread_join(thread_2, NULL);
+    fprintf(stdout, "Thread main attend Thread 2 (?)\n");
+    erreur_2 = pthread_join(thread_2, NULL);
+    printf("Erreur 2 : %d\n", erreur_2);
 
 	fprintf(stdout, "Thread main sortie\n");
 	// return EXIT_SUCCESS;
