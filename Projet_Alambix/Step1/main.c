@@ -11,9 +11,11 @@
 #include "alambix.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <pthread.h>
 
 pthread_t alambix_client0_thread;
 pthread_t alambix_client1_thread;
+pthread_mutex_t alambix_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void * alambix_client_thread_fct(void * arg);
 
@@ -23,7 +25,9 @@ void * alambix_client_thread_fct(void * arg)
 
     while ((drink = alambix_choose_drink()) != NULL)
     {
+        pthread_mutex_lock(&alambix_mutex);
         alambix_order_drink(drink);
+        pthread_mutex_unlock(&alambix_mutex);
     }
 }
 
@@ -67,5 +71,7 @@ int main(int argc, char * argv[])
     alambix_help(); // Launch the Alambix help documentation in a browser.
     // TODO: Insert cleanup code here.
 
-    return alambix_close();
+    int ret = alambix_close();
+    pthread_mutex_destroy(&alambix_mutex);
+    return ret;
 }
