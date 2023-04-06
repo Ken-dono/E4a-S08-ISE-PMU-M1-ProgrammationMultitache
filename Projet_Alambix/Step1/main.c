@@ -16,7 +16,9 @@
 pthread_t alambix_client0_thread;
 pthread_t alambix_client1_thread;
 pthread_t alambix_waiter_thread;
+
 pthread_mutex_t alambix_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_barrier_t alambix_barrier;
 
 void * alambix_client_thread_fct(void * arg);
 void * alambix_waiter_thread_fct(void * arg);
@@ -31,16 +33,19 @@ void * alambix_client_thread_fct(void * arg)
         alambix_order_drink(drink);
         pthread_mutex_unlock(&alambix_mutex);
     }
+    pthread_barrier_wait(&alambix_barrier);
 }
 
 void * alambix_waiter_thread_fct(void * arg)
 {
+    pthread_barrier_wait(&alambix_barrier);
     alambix_take_order();
 }
 
 void alambix_init()
 {
     // TODO: Insert initialization code here.
+    pthread_barrier_init(&alambix_barrier, NULL, 3);
 }
 
 void alambix_help()
@@ -83,10 +88,9 @@ void alambix_start() {
 int main(int argc, char * argv[])
 {
     alambix_open();
-    alambix_help(); // Launch the Alambix help documentation in a browser.
-    // TODO: Insert cleanup code here.
 
-    int ret = alambix_close();
+    // TODO: Insert cleanup code here.
+    pthread_barrier_destroy(&alambix_barrier);
     pthread_mutex_destroy(&alambix_mutex);
-    return ret;
+    return alambix_close();
 }
