@@ -34,13 +34,15 @@ int main(void)
 void *thread_lecture_fct()
 {
     scanf(" %c", &lettre_a_trouver);
-    printf("Lettre trouvée, arrêt du thread de lecture\n");
+    printf("Lettre lue : %c , arrêt du thread de lecture\n", lettre_a_trouver);
     return NULL;
 }
 
 void *thread_affichage_fct()
 {
-    printf("%c\n", lettre_a_trouver);
-    printf("Lettre trouvée, arrêt du thread d'affichage\n");
+    while (lettre_a_trouver == 0) {
+        sleep(1);
+    }
+    printf("Lettre affichée : %c , arrêt du thread d'affichage\n", lettre_a_trouver);
     return NULL;
 }
