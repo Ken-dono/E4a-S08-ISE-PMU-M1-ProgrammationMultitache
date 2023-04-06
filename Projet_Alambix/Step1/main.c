@@ -52,11 +52,13 @@ void alambix_start() {
         fprintf(stderr, "erreur pthread_create\n");
         exit(EXIT_FAILURE);
     }
+    pthread_detach(alambix_client0_thread);
     //Thread alambix_client1_thread
     if (pthread_create(&alambix_client1_thread, NULL, alambix_client_thread_fct, NULL) != 0) {
         fprintf(stderr, "erreur pthread_create\n");
         exit(EXIT_FAILURE);
     }
+    pthread_detach(alambix_client1_thread);
 }
 
 int main(int argc, char * argv[])
