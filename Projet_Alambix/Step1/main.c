@@ -15,9 +15,11 @@
 
 pthread_t alambix_client0_thread;
 pthread_t alambix_client1_thread;
+pthread_t alambix_waiter_thread;
 pthread_mutex_t alambix_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void * alambix_client_thread_fct(void * arg);
+void * alambix_waiter_thread_fct(void * arg);
 
 void * alambix_client_thread_fct(void * arg)
 {
@@ -29,6 +31,11 @@ void * alambix_client_thread_fct(void * arg)
         alambix_order_drink(drink);
         pthread_mutex_unlock(&alambix_mutex);
     }
+}
+
+void * alambix_waiter_thread_fct(void * arg)
+{
+    alambix_take_order();
 }
 
 void alambix_init()
@@ -57,12 +64,20 @@ void alambix_start() {
         exit(EXIT_FAILURE);
     }
     pthread_detach(alambix_client0_thread);
+
     //Thread alambix_client1_thread
     if (pthread_create(&alambix_client1_thread, NULL, alambix_client_thread_fct, NULL) != 0) {
         fprintf(stderr, "erreur pthread_create\n");
         exit(EXIT_FAILURE);
     }
     pthread_detach(alambix_client1_thread);
+
+    //Thread alambix_waiter_thread
+    if (pthread_create(&alambix_waiter_thread, NULL, alambix_waiter_thread_fct, NULL) != 0) {
+        fprintf(stderr, "erreur pthread_create\n");
+        exit(EXIT_FAILURE);
+    }
+    pthread_detach(alambix_waiter_thread);
 }
 
 int main(int argc, char * argv[])

@@ -5,8 +5,8 @@
 
 pthread_barrier_t barrier;
 
-void * thread_1_fct(void * arg);
-void * thread_2_fct(void * arg);
+void * thread_1_fct();
+void * thread_2_fct();
 
 int main(void)
 {
@@ -22,7 +22,7 @@ int main(void)
 		exit(EXIT_FAILURE);
 	}
 
-	if (pthread_create(&thread_2, NULL, thread_2_fct, (void *)42) != 0) {
+	if (pthread_create(&thread_2, NULL, thread_2_fct, NULL) != 0) {
 		fprintf(stderr, "erreur pthread_create\n");
 		exit(EXIT_FAILURE);
 	}
@@ -45,7 +45,7 @@ int main(void)
 	return EXIT_SUCCESS;
 }
 
-void * thread_1_fct(void * arg)
+void * thread_1_fct()
 {
 	sleep(2);
 
@@ -60,7 +60,7 @@ void * thread_1_fct(void * arg)
 	return NULL;
 }
 
-void * thread_2_fct(void * arg)
+void * thread_2_fct()
 {
 	sleep(4);
 
@@ -71,6 +71,7 @@ void * thread_2_fct(void * arg)
 	fprintf(stdout, "Thread 2 a passé la barrière\n");
 
 	sleep(4);
+    return NULL;
 }
 
 
