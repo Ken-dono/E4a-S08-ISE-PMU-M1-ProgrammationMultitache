@@ -39,7 +39,7 @@ int main(void)
 void * thread_1_fct(void * arg)
 {
 	for (int i = 0; i < 3; i++) {
-		fprintf(stdout, "Thread 1\n");
+		fprintf(stdout, "Thread 1 (argument = %ld)\n", (long)arg);
 		sleep(4);
 	}
 	return NULL;
