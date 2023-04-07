@@ -9,17 +9,23 @@
 //
 
 #include "alambix.h"
+
 #include <stdlib.h>
 #include <stdio.h>
+
 #include <pthread.h>
 #include <semaphore.h>
+
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <sys/types.h>
+#include <sys/wait.h>
+
+#include <fcntl.h>
 #include <unistd.h>
 #include <mqueue.h>
 #include <string.h>
 #include <errno.h>
+#include <signal.h>
 
 #define ALAMBIX_BARTENDER_MQ_NAME "/alambix_bartender_mq"
 #define ALAMBIX_BARTENDER_MQ_MSG_MAX (10)
@@ -41,6 +47,12 @@ struct mq_attr alambix_bartender_mq_attr;
 void * alambix_client_thread_fct(void * arg);
 void * alambix_waiter_thread_fct(void * arg);
 void * alambix_bartender_thread_fct(void * arg);
+
+void signal_sigchld_handler_help(int )
+{
+    fprintf(stdout, "SIGCHLD intercepté (PID %d) : page help\n", getpid());
+    wait(NULL);
+}
 
 void * alambix_client_thread_fct(void * arg)
 {
@@ -111,6 +123,14 @@ void alambix_init()
 
 void alambix_help()
 {
+    struct sigaction action;
+    /* interception de SIGCHLD pour suppression de zombis à tout moment */
+    action.sa_handler = signal_sigchld_handler_help;
+    sigemptyset(&(action.sa_mask));
+    action.sa_flags = SA_RESTART | SA_NOCLDSTOP; // SA_NOCLDSTOP : seulement quand un fils se termine (pas quand il est juste arrêté)
+
+    sigaction(SIGCHLD, &action, NULL);
+
     char* help_path = alambix_help_html();
     pid_t pid_fils = fork(); // Création d'un nouveau processus enfant
 
