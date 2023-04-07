@@ -13,13 +13,13 @@
 
 static int run = 1;
 
-void signal_sigint_handler(int signal)
+void signal_sigint_handler(int )
 {
 	fprintf(stdout, "\nSIGINT intercepté (PID %d)\n", getpid());
 	run = 0;
 }
 
-void signal_sigchld_handler(int signal)
+void signal_sigchld_handler(int )
 {
 	fprintf(stdout, "SIGCHLD intercepté (PID %d)\n", getpid());
 	wait(NULL);
