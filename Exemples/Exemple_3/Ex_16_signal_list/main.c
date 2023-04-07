@@ -6,20 +6,13 @@
 
 int main()
 {
-	int i;
+    int i;
 
-	fprintf(stdout, "strsignal() :\n");
+    fprintf(stdout, "strsignal() :\n");
 
-	for (i = 0; i < NSIG; i++) {
-		fprintf(stdout, "%d %s\n", i, strsignal(i));
-	}
+    for (i = 0; i < NSIG; i++) {
+        fprintf(stdout, "%d %s\n", i, strsignal(i));
+    }
 
-	fprintf(stdout, "\nsys_siglist[] :\n");
-
-	for (i = 0; i < NSIG; i++) {
-		fprintf(stdout, "%d %s\n", i, sys_siglist[i]);
-	}
-
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
-
