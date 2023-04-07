@@ -31,7 +31,7 @@ int main()
 		exit(EXIT_FAILURE);
 	}
 
-	fprintf(stdout, "taille max. d'un message : %d\n", attr.mq_msgsize);
+	fprintf(stdout, "taille max. d'un message : %ld\n", attr.mq_msgsize);
 	fflush(stdout);
 
 	char buffer[attr.mq_msgsize];
