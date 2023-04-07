@@ -15,7 +15,7 @@ int main()
 	struct mq_attr attr;
 
 	// ouverture de la file de message
-	if ((mq = mq_open(MQ_NAME, O_WRONLY)) == -1) {
+	if ((mq = mq_open(MQ_NAME, 01)) == -1) {
 		perror("mq_open()");
 		exit(EXIT_FAILURE);
 	}
