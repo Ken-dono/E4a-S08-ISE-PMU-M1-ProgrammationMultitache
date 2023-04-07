@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <mqueue.h>
 #include <string.h>
+#include <errno.h>
 
 #define ALAMBIX_BARTENDER_MQ_NAME "/alambix_bartender_mq"
 #define ALAMBIX_BARTENDER_MQ_MSG_MAX (10)
@@ -64,7 +65,7 @@ void * alambix_waiter_thread_fct(void * arg)
     while ((ordered_drink = alambix_get_ordered_drink()) != NULL)
     {
         // send the ordered drink using the bartender message queue
-        if (mq_send(alambix_bartender_mq, ordered_drink, strlen(ordered_drink), 0) == -1) {
+        if (mq_send(alambix_bartender_mq, ordered_drink, alambix_bartender_mq_attr.mq_msgsize, 0) == -1) {
             perror("mq_send()");
             exit(EXIT_FAILURE);
         }
@@ -74,9 +75,16 @@ void * alambix_waiter_thread_fct(void * arg)
 void * alambix_bartender_thread_fct(void * arg)
 {
     // receive the order from the waiter
+    char buffer[alambix_bartender_mq_attr.mq_msgsize];
     do
     {
         // receive the drink order using the bartender message queue
+        if (mq_receive(alambix_bartender_mq, buffer, alambix_bartender_mq_attr.mq_msgsize, NULL) == -1) {
+            perror("mq_receive()");
+            mq_unlink(ALAMBIX_BARTENDER_MQ);
+            mq_close(alambix_bartender_mq);
+            exit(EXIT_FAILURE);
+        }
     }
     while (alambix_has_ordered_drink());
 }
@@ -91,8 +99,13 @@ void alambix_init()
 
     // création/ouverture de la file de message
     if ((alambix_bartender_mq = mq_open(ALAMBIX_BARTENDER_MQ_NAME, O_RDWR | O_CREAT | O_EXCL, 0644, &alambix_bartender_mq_attr)) == -1) {
-        mq_unlink(ALAMBIX_BARTENDER_MQ);
-        alambix_bartender_mq = mq_open(ALAMBIX_BARTENDER_MQ_NAME, O_RDWR | O_CREAT, 0644, &alambix_bartender_mq_attr);
+        if (errno == EEXIST) {
+            mq_unlink(ALAMBIX_BARTENDER_MQ_NAME);
+            alambix_bartender_mq = mq_open(ALAMBIX_BARTENDER_MQ_NAME, O_RDWR | O_CREAT, 0644, &alambix_bartender_mq_attr);
+        } else {
+            perror("mq_open()");
+            exit(EXIT_FAILURE);
+        }
     }
 }
 
@@ -133,11 +146,11 @@ void alambix_start() {
     pthread_detach(alambix_waiter_thread);
 
     //Thread alambix_bartender_thread
-//    if (pthread_create(&alambix_bartender_thread, NULL, alambix_bartender_thread_fct, NULL) != 0) {
-//        fprintf(stderr, "erreur pthread_create\n");
-//        exit(EXIT_FAILURE);
-//    }
-//    pthread_detach(alambix_bartender_thread);
+    if (pthread_create(&alambix_bartender_thread, NULL, alambix_bartender_thread_fct, NULL) != 0) {
+        fprintf(stderr, "erreur pthread_create\n");
+        exit(EXIT_FAILURE);
+    }
+    pthread_detach(alambix_bartender_thread);
 }
 
 int main(int argc, char * argv[])
