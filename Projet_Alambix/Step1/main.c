@@ -104,12 +104,12 @@ void * alambix_bartender_thread_fct(void * arg)
 void alambix_init()
 {
     // TODO: Insert initialization code here.
+
     sem_init(&alambix_semaphore, 0, 0);
 
+    // création/ouverture de la file de message
     alambix_bartender_mq_attr.mq_maxmsg = ALAMBIX_BARTENDER_MQ_MSG_MAX;
     alambix_bartender_mq_attr.mq_msgsize = ALAMBIX_BARTENDER_MQ_MSG_SIZE;
-
-    // création/ouverture de la file de message
     if ((alambix_bartender_mq = mq_open(ALAMBIX_BARTENDER_MQ_NAME, O_RDWR | O_CREAT | O_EXCL, 0644, &alambix_bartender_mq_attr)) == -1) {
         if (errno == EEXIST) {
             mq_unlink(ALAMBIX_BARTENDER_MQ_NAME);
@@ -119,18 +119,17 @@ void alambix_init()
             exit(EXIT_FAILURE);
         }
     }
+
+    /* interception de SIGCHLD pour suppression de zombis à tout moment */
+    struct sigaction action;
+    action.sa_handler = signal_sigchld_handler_help;
+    sigemptyset(&(action.sa_mask));
+    action.sa_flags = SA_RESTART | SA_NOCLDSTOP; // SA_NOCLDSTOP : seulement quand un fils se termine (pas quand il est juste arrêté)
+    sigaction(SIGCHLD, &action, NULL);
 }
 
 void alambix_help()
 {
-    struct sigaction action;
-    /* interception de SIGCHLD pour suppression de zombis à tout moment */
-    action.sa_handler = signal_sigchld_handler_help;
-    sigemptyset(&(action.sa_mask));
-    action.sa_flags = SA_RESTART | SA_NOCLDSTOP; // SA_NOCLDSTOP : seulement quand un fils se termine (pas quand il est juste arrêté)
-
-    sigaction(SIGCHLD, &action, NULL);
-
     char* help_path = alambix_help_html();
     pid_t pid_fils = fork(); // Création d'un nouveau processus enfant
 
