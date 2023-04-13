@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
 #include <time.h>
 #include <signal.h>
 
@@ -35,10 +34,9 @@ int main(void)
 	}
 
 	struct itimerspec itimer;
-
 	itimer.it_interval.tv_sec = 0;
 	itimer.it_interval.tv_nsec = 0;
-	itimer.it_value.tv_sec = 4;
+	itimer.it_value.tv_sec = 14;
 	itimer.it_value.tv_nsec = 0;
 
 	time(&current_time); 
@@ -49,7 +47,7 @@ int main(void)
 		exit(EXIT_FAILURE);
 	}
 
-	for (int i = 0; i < 6; i++) {
+	for (int i = 0; i < 20; i++) {
 		fprintf(stdout, "main travaille...\n");
 		sleep(1);
 	}
