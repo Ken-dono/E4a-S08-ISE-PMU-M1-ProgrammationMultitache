@@ -22,7 +22,6 @@ int main(void)
 	timer_t timer;
 
 	struct sigevent event;
-
 	event.sigev_notify = SIGEV_THREAD;
 	event.sigev_value.sival_ptr = (void *)value;
 	event.sigev_notify_function = notify_function;
@@ -36,7 +35,7 @@ int main(void)
 	struct itimerspec itimer;
 	itimer.it_interval.tv_sec = 0;
 	itimer.it_interval.tv_nsec = 0;
-	itimer.it_value.tv_sec = 14;
+	itimer.it_value.tv_sec = 4;
 	itimer.it_value.tv_nsec = 0;
 
 	time(&current_time); 

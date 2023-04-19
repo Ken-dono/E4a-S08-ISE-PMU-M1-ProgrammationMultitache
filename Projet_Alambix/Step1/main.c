@@ -26,6 +26,7 @@
 #include <string.h>
 #include <errno.h>
 #include <signal.h>
+#include <time.h>
 
 #define ALAMBIX_BARTENDER_MQ_NAME "/alambix_bartender_mq"
 #define ALAMBIX_BARTENDER_MQ_MSG_MAX (10)
@@ -39,6 +40,9 @@ pthread_t alambix_bartender_thread;
 pthread_mutex_t alambix_mutex = PTHREAD_MUTEX_INITIALIZER;
 sem_t alambix_semaphore;
 
+// configuration timer
+timer_t timer;
+struct sigevent event;
 
 // configuration de la file de message
 mqd_t alambix_bartender_mq;
@@ -97,6 +101,23 @@ void * alambix_bartender_thread_fct(void * arg)
             mq_close(alambix_bartender_mq);
             exit(EXIT_FAILURE);
         }
+
+        struct itimerspec itimer;
+        itimer.it_interval.tv_sec = 0;
+        itimer.it_interval.tv_nsec = 0;
+        itimer.it_value.tv_sec = 2;
+        itimer.it_value.tv_nsec = 0;
+
+        // prepare an order
+        char * drink_to_prepare = buffer;
+        alambix_still_start(drink_to_prepare);
+        event.sigev_value.sival_ptr = (void *)drink_to_prepare;
+
+        // launch a timer to stop the still after 2s
+        if (timer_settime(timer, 0, &itimer, NULL) != 0) {
+            perror("timer_settime");
+            exit(EXIT_FAILURE);
+        }
     }
     while (alambix_has_ordered_drink());
 }
@@ -126,6 +147,17 @@ void alambix_init()
     sigemptyset(&(action.sa_mask));
     action.sa_flags = SA_RESTART | SA_NOCLDSTOP; // SA_NOCLDSTOP : seulement quand un fils se termine (pas quand il est juste arrêté)
     sigaction(SIGCHLD, &action, NULL);
+
+    /* interception timer */
+    event.sigev_notify = SIGEV_THREAD;
+    event.sigev_notify_function = alambix_still_stop;
+    event.sigev_notify_attributes = NULL;
+
+    // création du timer
+    if (timer_create(CLOCK_REALTIME, &event, &timer) != 0) {
+        perror("timer_create");
+        exit(EXIT_FAILURE);
+    }
 }
 
 void alambix_help()
