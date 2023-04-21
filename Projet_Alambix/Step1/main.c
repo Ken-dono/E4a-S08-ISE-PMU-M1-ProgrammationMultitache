@@ -38,7 +38,8 @@ pthread_t alambix_waiter_thread;
 pthread_t alambix_bartender_thread;
 
 pthread_mutex_t alambix_mutex = PTHREAD_MUTEX_INITIALIZER;
-sem_t alambix_semaphore;
+sem_t alambix_semaphore_order_drink;
+sem_t alambix_semaphore_provide_drink;
 
 // configuration timer
 timer_t timer;
@@ -67,13 +68,13 @@ void * alambix_client_thread_fct(void * arg)
         alambix_order_drink(drink);
         pthread_mutex_unlock(&alambix_mutex);
     }
-    sem_post(&alambix_semaphore);
+    sem_post(&alambix_semaphore_order_drink);
 }
 
 void * alambix_waiter_thread_fct(void * arg)
 {
-    sem_wait(&alambix_semaphore);
-    sem_wait(&alambix_semaphore);
+    sem_wait(&alambix_semaphore_order_drink);
+    sem_wait(&alambix_semaphore_order_drink);
     alambix_take_order();
 
     // transmit the order to the bartender
@@ -86,6 +87,10 @@ void * alambix_waiter_thread_fct(void * arg)
             exit(EXIT_FAILURE);
         }
     }
+
+    // serve the order
+    sem_wait(&alambix_semaphore_provide_drink);
+    alambix_serve_order();
 }
 
 void * alambix_bartender_thread_fct(void * arg)
@@ -120,13 +125,16 @@ void * alambix_bartender_thread_fct(void * arg)
         }
     }
     while (alambix_has_ordered_drink());
+    alambix_provide_order();
+    sem_post(&alambix_semaphore_provide_drink);
 }
 
 void alambix_init()
 {
     // TODO: Insert initialization code here.
 
-    sem_init(&alambix_semaphore, 0, 0);
+    sem_init(&alambix_semaphore_order_drink, 0, 0);
+    sem_init(&alambix_semaphore_provide_drink, 0, 0);
 
     // création/ouverture de la file de message
     alambix_bartender_mq_attr.mq_maxmsg = ALAMBIX_BARTENDER_MQ_MSG_MAX;
@@ -212,6 +220,7 @@ int main(int argc, char * argv[])
     mq_unlink(ALAMBIX_BARTENDER_MQ);
     mq_close(alambix_bartender_mq);
     pthread_mutex_destroy(&alambix_mutex);
-    sem_destroy(&alambix_semaphore);
+    sem_destroy(&alambix_semaphore_order_drink);
+    sem_destroy(&alambix_semaphore_provide_drink);
     return alambix_close();
 }
